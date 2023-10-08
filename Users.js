@@ -7,7 +7,6 @@ const fs = require('fs');
 const app = express();
 const port = 3000; // Connects to localhost:3000
 const assignmentRouter = require('./Authentication')
-const healthcheckRouter = require('./healthcheckAPI.js')
 const csvParser = require('csv-parser');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
@@ -24,7 +23,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 // The following query was used to create the ACCOUNT table.
 // CREATE TABLE IF NOT EXISTS ACCOUNT (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL,  password VARCHAR(255) NOT NULL,  email VARCHAR(255) NOT NULL UNIQUE,  account_created TIMESTAMP DEFAULT NOW(),  account_updated TIMESTAMP DEFAULT NOW());
 // The following query was used to create the ASSIGNMENT table.
-// CREATE TABLE IF NOT EXISTS ASSIGNMENT (id UUID DEFAULT uuid_generate_v4(),name VARCHAR(255) NOT NULL,points NUMERIC(5, 2) NOT NULL CHECK (points >= 1 AND points <= 100),num_of_attempts INT NOT NULL CHECK (num_of_attempts >= 1 AND num_of_attempts <= 100),deadline TIMESTAMP WITH TIME ZONE NOT NULL,assignment_created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,assignment_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+// CREATE TABLE IF NOT EXISTS ASSIGNMENT (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),name VARCHAR(255) NOT NULL,points NUMERIC(5, 2) NOT NULL CHECK (points >= 1 AND points <= 100),num_of_attempts INT NOT NULL CHECK (num_of_attempts >= 1 AND num_of_attempts <= 100),deadline TIMESTAMP WITH TIME ZONE NOT NULL,assignment_created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,assignment_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
 
 
 const sequelize = new Sequelize({
@@ -69,17 +68,12 @@ const Account = sequelize.define('account', {
 // Middleware to parse JSON requests
 app.use(express.json());
 
-
-app.use('/', healthcheckRouter);
-app.use('/', assignmentRouter);
-
 async function initializeDatabase() {
-  
   try {
     // Check if the "ACCOUNT" table exists
-    const AccountTableExists = await sequelize.getQueryInterface().showAllTables();
+    const tableExists = await sequelize.getQueryInterface().showAllTables();
 
-    if (!AccountTableExists.includes('account')) {
+    if (!tableExists.includes('account')) {
       // The "ACCOUNT" table doesn't exist, so create it
       await sequelize.getQueryInterface().createTable('account', {
         id: {
@@ -149,12 +143,10 @@ async function initializeDatabase() {
     console.error('Error initializing database:', error);
   }
 }
-
+app.use('/', assignmentRouter);
 // Call the initialization function
 initializeDatabase();
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-//app.use('/', assignmentRouter);
-

@@ -17,7 +17,8 @@
     "pg-hstore": "^2.3.4",
     "pg-pool": "^3.6.1",
     "sequelize": "^6.33.0",
-    "sequelize-cli": "^6.6.1"
+    "sequelize-cli": "^6.6.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
